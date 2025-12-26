@@ -1,0 +1,140 @@
+.risk-assessment {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-md);
+}
+
+.risk-assessment h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  color: var(--gray-900);
+}
+
+.overall-risk {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 3rem;
+}
+
+.risk-score-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.risk-score-circle {
+  position: relative;
+  width: 180px;
+  height: 180px;
+}
+
+.risk-score-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.risk-score-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.risk-score-value {
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--gray-900);
+}
+
+.risk-score-label {
+  font-size: 0.875rem;
+  color: var(--gray-600);
+  font-weight: 500;
+}
+
+.risk-category {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--gray-900);
+}
+
+.category-risks h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: var(--gray-900);
+}
+
+.risk-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.risk-card {
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  transition: box-shadow 0.2s;
+}
+
+.risk-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.risk-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.risk-category-name {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--gray-900);
+}
+
+.risk-level-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.risk-card-body {
+  color: var(--gray-600);
+  font-size: 0.875rem;
+}
+
+.affected-markers {
+  font-weight: 500;
+}
+
+@media (max-width: 640px) {
+  .risk-assessment {
+    padding: 1.5rem;
+  }
+
+  .risk-score-circle {
+    width: 140px;
+    height: 140px;
+  }
+
+  .risk-score-value {
+    font-size: 2.5rem;
+  }
+
+  .risk-cards {
+    grid-template-columns: 1fr;
+  }
+}

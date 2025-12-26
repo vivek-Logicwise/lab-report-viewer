@@ -1,0 +1,123 @@
+.biological-age {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-md);
+}
+
+.biological-age h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  color: var(--gray-900);
+}
+
+.age-comparison {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 3rem;
+  margin-bottom: 2rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: var(--radius-lg);
+  color: white;
+}
+
+.age-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.age-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  opacity: 0.9;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.age-value {
+  font-size: 3.5rem;
+  font-weight: 700;
+}
+
+.age-unit {
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+.age-arrow {
+  font-size: 2rem;
+  opacity: 0.8;
+}
+
+.age-difference {
+  padding: 1.5rem;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.age-difference.younger {
+  background-color: #d1fae5;
+  border: 2px solid var(--success-color);
+}
+
+.age-difference.older {
+  background-color: #fef3c7;
+  border: 2px solid var(--warning-color);
+}
+
+.difference-icon {
+  font-size: 2rem;
+}
+
+.difference-text {
+  font-size: 1rem;
+  color: var(--gray-900);
+  flex: 1;
+}
+
+.age-explanation {
+  padding: 1.5rem;
+  background-color: var(--gray-50);
+  border-radius: var(--radius-md);
+  border-left: 4px solid var(--primary-color);
+}
+
+.age-explanation p {
+  color: var(--gray-700);
+  line-height: 1.6;
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .biological-age {
+    padding: 1.5rem;
+  }
+
+  .age-comparison {
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1.5rem;
+  }
+
+  .age-value {
+    font-size: 2.5rem;
+  }
+
+  .age-arrow {
+    transform: rotate(90deg);
+  }
+
+  .age-difference {
+    flex-direction: column;
+    text-align: center;
+  }
+}
