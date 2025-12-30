@@ -24,11 +24,20 @@
  *       "critical_threshold": 20 
  *     } 
  *   }],
- *   "patterns": [{ "name": "Chronic Inflammation", "markers_affected": ["CRP", "IL6"], "severity": 4.5 }],
+ *   "patterns": [{ 
+ *     "name": "Chronic Inflammation", 
+ *     "markers_affected": ["CRP", "IL6"], 
+ *     "severity": 5.4, 
+ *     "trigger_count": 2,
+ *     "description": "Multiple inflammatory markers elevated, indicating chronic inflammatory state"
+ *   }],
  *   "risk_assessment": { "overall_risk_score": 4.2, "risk_category": "MODERATE", "category_risks": {...} },
  *   "biological_age": { "avg_severity": 4.2, "age_delta": -1.2, "biological_age": 30.8 },
  *   "generated_at": "2025-01-01T10:45:12Z"
  * }
+ * 
+ * IMPORTANT: Backend must detect patterns by analyzing markers and return them in the response
+ * Pattern detection should NOT be done on the frontend
  * 
  * BUSINESS LOGIC IMPLEMENTED:
  * - Status calculation: Based on value comparison with thresholds (handles "lower is worse" markers)
@@ -37,7 +46,7 @@
  * - Biological age: ageDelta = (avgSeverity - 5) × 1.5
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
 
 /**
  * Upload PDF files and get patient data
@@ -50,13 +59,13 @@ export const uploadPDFFiles = async (files, onProgress) => {
   
   // Add all files to form data
   Array.from(files).forEach((file, index) => {
-    formData.append(`file_${index}`, file);
+    formData.append('files', file);
   });
 
   try {
-    // Simulate upload progress (replace with real XMLHttpRequest in production)
     debugger;
-    const response = await fetch(`${API_BASE_URL}/upload`, {
+    // Call the actual API endpoint
+    const response = await fetch(`${API_BASE_URL}/biomarkers/upload`, {
       method: 'POST',
       body: formData,
     });
@@ -66,16 +75,89 @@ export const uploadPDFFiles = async (files, onProgress) => {
     }
 
     const data = await response.json();
-    return data.patients; // Expecting { patients: [...] }
+    
+    // Handle new response format with patients array
+    if (data.patients && Array.isArray(data.patients)) {
+      // New format: { success, total_patients, patients: [...] }
+      return data.patients.map(patient => transformAPIResponse(patient));
+    } else if (data.participant) {
+      // Old format: single patient object
+      return [transformAPIResponse(data)];
+    } else {
+      throw new Error('Invalid response format from server');
+    }
     
   } catch (error) {
     console.error('Upload error:', error);
+    throw error;
     
-    // MOCK DATA - Remove in production
+    // MOCK DATA - Fallback to dummy data if API fails
     // Simulate backend response with mock patient data
-    return generateMockPatientData(files.length);
+    //return generateMockPatientData(files.length);
   }
 };
+
+/**
+ * Transform API response to match internal data structure
+ * Handles mapping of category names and adds risk_level to categories
+ */
+function transformAPIResponse(apiData) {
+  // Map backend category names to frontend category names
+  const categoryMapping = {
+    'Liver': 'Liver Function',
+    'Kidney': 'Kidney Function',
+    'Hormones': 'Hormones',
+    'Inflammation': 'Inflammation',
+    'Metabolism': 'Metabolism',
+    'Cardiovascular': 'Cardiovascular',
+    'Vitamins/Minerals': 'Vitamins/Minerals',
+    'Blood Health': 'Blood Health',
+    'Thyroid Function': 'Thyroid Function'
+  };
+
+  // Transform markers to include mapped categories
+  const transformedMarkers = apiData.markers.map(marker => ({
+    ...marker,
+    category: categoryMapping[marker.category] || marker.category
+  }));
+
+  // Transform category_risks to add risk_level based on average_severity
+  const transformedCategoryRisks = {};
+  if (apiData.risk_assessment && apiData.risk_assessment.category_risks) {
+    Object.keys(apiData.risk_assessment.category_risks).forEach(category => {
+      const categoryData = apiData.risk_assessment.category_risks[category];
+      const mappedCategory = categoryMapping[category] || category;
+      
+      transformedCategoryRisks[mappedCategory] = {
+        ...categoryData,
+        risk_level: getRiskLevelFromSeverity(categoryData.average_severity)
+      };
+    });
+  }
+
+  return {
+    participant: apiData.participant,
+    summary: apiData.summary,
+    markers: transformedMarkers,
+    patterns: apiData.patterns || [],
+    risk_assessment: {
+      ...apiData.risk_assessment,
+      category_risks: transformedCategoryRisks
+    },
+    biological_age: apiData.biological_age,
+    generated_at: apiData.generated_at
+  };
+}
+
+/**
+ * Determine risk level from average severity
+ */
+function getRiskLevelFromSeverity(avgSeverity) {
+  if (avgSeverity >= 9) return 'CRITICAL';
+  if (avgSeverity >= 6) return 'HIGH';
+  if (avgSeverity >= 3) return 'MODERATE';
+  return 'LOW';
+}
 
 /**
  * Generate AI report for a patient
@@ -107,7 +189,33 @@ export const generateAIReport = async (participantId) => {
 };
 
 /**
+ * Generate mock patterns that simulate backend response
+ * Backend should detect patterns based on marker analysis
+ */
+function generateMockPatterns() {
+  // Simulate backend pattern detection response
+  return [
+    {
+      name: 'Chronic Inflammation',
+      markers_affected: ['CRP', 'IL6'],
+      severity: 5.4,
+      trigger_count: 2,
+      description: 'Multiple inflammatory markers elevated, indicating chronic inflammatory state'
+    },
+    {
+      name: 'Vitamin Deficiency',
+      markers_affected: ['VITD3'],
+      severity: 4.2,
+      trigger_count: 1,
+      description: 'Vitamin/mineral deficiencies detected, requiring supplementation'
+    }
+  ];
+}
+
+/**
  * Detect health patterns based on marker abnormalities
+ * NOTE: This function is for reference only - Backend should perform pattern detection
+ * The backend analyzes markers and returns patterns in the response
  * Implements pattern detection from Business Logic document
  * @param {Array} markers - Array of marker objects
  * @returns {Array} Detected patterns with severity
@@ -265,8 +373,8 @@ function generateMockPatientData(count) {
     // Phase 1: VIP Markers Only (27 markers)
     const vipMarkers = generateVIPMarkers();
     
-    // Detect health patterns dynamically
-    const patterns = detectHealthPatterns(vipMarkers);
+    // Patterns should come from backend - using mock patterns for now
+    const patterns = generateMockPatterns();
     
     // Calculate summary from VIP markers
     const normalCount = vipMarkers.filter(m => m.status === 'NORMAL').length;
@@ -384,7 +492,7 @@ function generateVIPMarkers() {
     
     // Metabolism markers (3)
     { marker_code: 'HBA1C', marker_name: 'Glycated Hemoglobin', category: 'Metabolism', value: 5.8, unit: '%', reference_used: 'Western', is_lower_is_worse: false, thresholds: { elevated_threshold: 5.6, high_threshold: 6.5, critical_threshold: 8.0 } },
-    { marker_code: 'GLUCOSE', marker_name: 'Fasting Glucose', category: 'Metabolism', value: 92, unit: 'mg/dL', reference_used: 'Western', is_lower_is_worse: false, thresholds: { elevated_threshold: 100, high_threshold: 126, critical_threshold: 200 } },
+    { marker_code: 'GLUCOSE', marker_name: 'Fasting Glucose', category: 'Metabolism', value: 240, unit: 'mg/dL', reference_used: 'Western', is_lower_is_worse: false, thresholds: { elevated_threshold: 100, high_threshold: 126, critical_threshold: 200 } },
     { marker_code: 'INSULIN', marker_name: 'Fasting Insulin', category: 'Metabolism', value: 8.5, unit: 'μIU/mL', reference_used: 'Western', is_lower_is_worse: false, thresholds: { elevated_threshold: 20, high_threshold: 30, critical_threshold: 50 } },
     
     // Cardiovascular markers (4)
@@ -469,6 +577,7 @@ function calculateCategoryRisks(markers) {
       weight: categoryData.weight,
       weighted_score: Number(weightedScore.toFixed(2)),
       markers_count: categoryData.markers.length,
+      risk_level: getRiskLevelFromSeverity(avgSeverity)
     };
     
     totalWeightedScore += weightedScore;

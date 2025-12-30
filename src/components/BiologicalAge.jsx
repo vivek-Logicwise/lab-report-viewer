@@ -4,13 +4,25 @@ import './BiologicalAge.css';
  * Biological Age Component
  * Displays biological age vs chronological age comparison
  */
-function BiologicalAge({ biologicalAge }) {
+function BiologicalAge({ biologicalAge, chronologicalAge }) {
   if (!biologicalAge) return null;
 
   // Handle both old and new data structures
-  const chronologicalAge = biologicalAge.chronological_age || 32;
-  const bioAge = Number(biologicalAge.biological_age?.toFixed(1)) || chronologicalAge;
-  const difference = biologicalAge.age_delta || biologicalAge.difference || (bioAge - chronologicalAge);
+  const chronAge = chronologicalAge || biologicalAge.chronological_age || null;
+  const bioAge = Number(biologicalAge.biological_age?.toFixed(1)) || 0;
+  const difference = biologicalAge.age_delta || biologicalAge.difference || (bioAge - (chronAge || 0));
+
+  // Don't display if we don't have valid data
+  if (!chronAge || bioAge === 0) {
+    return (
+      <div className="biological-age">
+        <h2>Biological Age Analysis</h2>
+        <div className="age-explanation">
+          <p>Biological age calculation requires chronological age data. Please provide your age for accurate analysis.</p>
+        </div>
+      </div>
+    );
+  }
 
   const isYounger = difference < 0;
   const abseDifference = Math.abs(difference).toFixed(1);
@@ -22,7 +34,7 @@ function BiologicalAge({ biologicalAge }) {
       <div className="age-comparison">
         <div className="age-item">
           <div className="age-label">Chronological Age</div>
-          <div className="age-value">{chronologicalAge}</div>
+          <div className="age-value">{chronAge}</div>
           <div className="age-unit">years</div>
         </div>
 

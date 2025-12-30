@@ -1,27 +1,39 @@
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useState } from 'react';
 import UploadPage from './components/UploadPage';
 import PatientViewer from './components/PatientViewer';
 import './App.css';
 
 /**
- * Main App Component
+ * Main App Component with React Router
  * Manages:
- * - Current page state (upload vs viewer)
- * - Patient data collection from uploads
+ * - Routing between upload and viewer pages
+ * - Patient data storage and navigation
  * - Current patient index for navigation
  */
 function App() {
-  // Page state: 'upload' or 'viewer'
-  const [currentPage, setCurrentPage] = useState('upload');
-  
   // Array of patient data objects received from backend
   const [patients, setPatients] = useState([]);
   
-  // Current patient index being viewed (0-based)
-  const [currentPatientIndex, setCurrentPatientIndex] = useState(0);
-  
   // Loading state for next patient navigation
   const [isLoadingNext, setIsLoadingNext] = useState(false);
+
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<UploadPageWrapper patients={patients} setPatients={setPatients} />} />
+        <Route path="/patient/:index" element={<PatientViewerWrapper patients={patients} setPatients={setPatients} isLoadingNext={isLoadingNext} setIsLoadingNext={setIsLoadingNext} />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Router>
+  );
+}
+
+/**
+ * Upload Page Wrapper Component
+ */
+function UploadPageWrapper({ patients, setPatients }) {
+  const navigate = useNavigate();
 
   /**
    * Handle completion of PDF uploads
@@ -29,16 +41,36 @@ function App() {
    */
   const handleUploadComplete = (uploadedPatients) => {
     setPatients(uploadedPatients);
-    setCurrentPatientIndex(0);
-    setCurrentPage('viewer');
+    navigate('/patient/0');
   };
+
+  return <UploadPage onUploadComplete={handleUploadComplete} />;
+}
+
+/**
+ * Patient Viewer Wrapper Component
+ */
+function PatientViewerWrapper({ patients, setPatients, isLoadingNext, setIsLoadingNext }) {
+  const navigate = useNavigate();
+  const { index } = useParams();
+  const currentPatientIndex = parseInt(index, 10);
+
+  // Redirect to upload if no patients
+  if (!patients || patients.length === 0) {
+    return <Navigate to="/" replace />;
+  }
+
+  // Redirect if index is out of bounds
+  if (currentPatientIndex < 0 || currentPatientIndex >= patients.length) {
+    return <Navigate to="/patient/0" replace />;
+  }
 
   /**
    * Navigate to previous patient
    */
   const handlePrevious = () => {
     if (currentPatientIndex > 0) {
-      setCurrentPatientIndex(currentPatientIndex - 1);
+      navigate(`/patient/${currentPatientIndex - 1}`);
     }
   };
 
@@ -53,7 +85,7 @@ function App() {
       // Simulate waiting for backend processing (remove in production)
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      setCurrentPatientIndex(currentPatientIndex + 1);
+      navigate(`/patient/${currentPatientIndex + 1}`);
       setIsLoadingNext(false);
     }
   };
@@ -62,27 +94,20 @@ function App() {
    * Return to upload page
    */
   const handleBackToUpload = () => {
-    setCurrentPage('upload');
     setPatients([]);
-    setCurrentPatientIndex(0);
+    navigate('/');
   };
 
   return (
-    <div className="app">
-      {currentPage === 'upload' ? (
-        <UploadPage onUploadComplete={handleUploadComplete} />
-      ) : (
-        <PatientViewer
-          patient={patients[currentPatientIndex]}
-          currentIndex={currentPatientIndex}
-          totalPatients={patients.length}
-          onPrevious={handlePrevious}
-          onNext={handleNext}
-          isLoadingNext={isLoadingNext}
-          onBackToUpload={handleBackToUpload}
-        />
-      )}
-    </div>
+    <PatientViewer
+      patient={patients[currentPatientIndex]}
+      currentIndex={currentPatientIndex}
+      totalPatients={patients.length}
+      onPrevious={handlePrevious}
+      onNext={handleNext}
+      isLoadingNext={isLoadingNext}
+      onBackToUpload={handleBackToUpload}
+    />
   );
 }
 

@@ -6,7 +6,6 @@ import './MarkerTable.css';
  * Displays lab markers grouped by category
  */
 function MarkerTable({ markers }) {
-  debugger;
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
 

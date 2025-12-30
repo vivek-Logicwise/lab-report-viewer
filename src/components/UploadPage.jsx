@@ -41,7 +41,6 @@ function UploadPage({ onUploadComplete }) {
    * Handle file upload
    */
   const handleUpload = async () => {
-    debugger;
     if (selectedFiles.length === 0) {
       setError('Please select at least one PDF file');
       return;

@@ -74,7 +74,10 @@ function PatientViewer({
             <PatternDetection patterns={patient.patterns} />
             <MarkerTable markers={patient.markers} />
             <RiskAssessment riskAssessment={patient.risk_assessment} />
-            <BiologicalAge biologicalAge={patient.biological_age} />
+            <BiologicalAge 
+              biologicalAge={patient.biological_age} 
+              chronologicalAge={patient.participant?.chronological_age}
+            />
           </>
         )}
       </div>

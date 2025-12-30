@@ -42,14 +42,14 @@ function PatternDetection({ patterns }) {
   const getPatternIcon = (patternName) => {
     const iconMap = {
       'Chronic Inflammation': '🔥',
-      'Metabolic Syndrome': '⚡',
+      'Metabolic Syndrome': '🧬',
       'Cardiovascular Risk': '❤️',
       'Oxidative Stress': '🔬',
       'Liver Stress': '🫀',
       'Vitamin Deficiency': '💊',
       'Thyroid Dysfunction': '🦋',
     };
-    return iconMap[patternName] || '🔍';
+    return iconMap[patternName] || '🩺';
   };
 
   // Sort patterns by severity (highest first)

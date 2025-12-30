@@ -18,7 +18,7 @@ function RiskAssessment({ riskAssessment }) {
     : Object.keys(categoryRisks || {}).map(key => ({
         category: key,
         ...categoryRisks[key],
-        risk_level: getRiskLevelFromSeverity(categoryRisks[key].average_severity),
+        risk_level: categoryRisks[key].risk_level || getRiskLevelFromSeverity(categoryRisks[key].average_severity),
         affected_markers: categoryRisks[key].markers_count,
       }));
 
@@ -26,21 +26,24 @@ function RiskAssessment({ riskAssessment }) {
    * Get risk level from severity score
    */
   function getRiskLevelFromSeverity(severity) {
-    if (severity < 2.5) return 'Low';
-    if (severity < 5.0) return 'Moderate';
-    return 'High';
+    if (severity >= 9) return 'CRITICAL';
+    if (severity >= 6) return 'HIGH';
+    if (severity >= 3) return 'MODERATE';
+    return 'LOW';
   }
 
   /**
    * Get risk level color
    */
   const getRiskColor = (riskLevel) => {
+    const normalizedLevel = riskLevel.toUpperCase();
     const colorMap = {
-      'Low': '#10b981',
-      'Moderate': '#f59e0b',
-      'High': '#ef4444',
+      'LOW': '#10b981',
+      'MODERATE': '#f59e0b',
+      'HIGH': '#ef4444',
+      'CRITICAL': '#dc2626',
     };
-    return colorMap[riskLevel] || '#6b7280';
+    return colorMap[normalizedLevel] || '#6b7280';
   };
 
   /**
