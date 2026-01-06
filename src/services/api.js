@@ -87,19 +87,31 @@ export const uploadPDFFiles = async (files, onProgress) => {
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Upload failed:', errorText);
       throw new Error(`Upload failed: ${response.statusText}`);
     }
 
     const data = await response.json();
+    console.log('API Response:', data);
+    
+    // Validate response data
+    if (!data) {
+      throw new Error('Empty response from server');
+    }
     
     // Handle new response format with patients array
     if (data.patients && Array.isArray(data.patients)) {
       // New format: { success, total_patients, patients: [...] }
+      if (data.patients.length === 0) {
+        throw new Error('No patient data returned from server');
+      }
       return data.patients.map(patient => transformAPIResponse(patient));
     } else if (data.participant) {
       // Old format: single patient object
       return [transformAPIResponse(data)];
     } else {
+      console.error('Invalid response structure:', data);
       throw new Error('Invalid response format from server');
     }
     
@@ -118,6 +130,12 @@ export const uploadPDFFiles = async (files, onProgress) => {
  * Handles mapping of category names and adds risk_level to categories
  */
 function transformAPIResponse(apiData) {
+  // Validate input
+  if (!apiData) {
+    console.error('transformAPIResponse: apiData is null or undefined');
+    throw new Error('Invalid patient data');
+  }
+
   // Map backend category names to frontend category names
   const categoryMapping = {
     'Liver': 'Liver Function',
@@ -132,7 +150,7 @@ function transformAPIResponse(apiData) {
   };
 
   // Transform markers to include mapped categories
-  const transformedMarkers = apiData.markers.map(marker => ({
+  const transformedMarkers = (apiData.markers || []).map(marker => ({
     ...marker,
     category: categoryMapping[marker.category] || marker.category
   }));
@@ -152,16 +170,16 @@ function transformAPIResponse(apiData) {
   }
 
   return {
-    participant: apiData.participant,
-    summary: apiData.summary,
+    participant: apiData.participant || {},
+    summary: apiData.summary || { total_markers: 0, normal_count: 0, elevated_count: 0, high_count: 0, critical_count: 0 },
     markers: transformedMarkers,
     patterns: apiData.patterns || [],
     risk_assessment: {
-      ...apiData.risk_assessment,
+      ...(apiData.risk_assessment || {}),
       category_risks: transformedCategoryRisks
     },
-    biological_age: apiData.biological_age,
-    generated_at: apiData.generated_at
+    biological_age: apiData.biological_age || { avg_severity: 0, age_delta: 0, biological_age: 0 },
+    generated_at: apiData.generated_at || new Date().toISOString()
   };
 }
 
