@@ -46,7 +46,23 @@
  * - Biological age: ageDelta = (avgSeverity - 5) × 1.5
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+// Determine API URL based on environment
+const getAPIBaseURL = () => {
+  // Check if environment variable is set (highest priority)
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL;
+  }
+  
+  // In production (deployed), use deployed backend
+  if (import.meta.env.PROD) {
+    return 'https://lab-report-backend.vercel.app/api';
+  }
+  
+  // In development (local), use local backend
+  return 'http://localhost:3000/api';
+};
+
+const API_BASE_URL = getAPIBaseURL();
 
 /**
  * Upload PDF files and get patient data
