@@ -672,7 +672,7 @@ function generateMockAIReport(participantId) {
     analysis_phase: 'COMPLETE_AI_ANALYSIS',
     report_id: `RPT-${new Date().toISOString().split('T')[0]}-${Math.floor(Math.random() * 1000)}`,
     generated_at: new Date().toISOString(),
-    analysis_engine: 'Gemini-Pro-1.5',
+    analysis_engine: 'Gemini-Pro-3.0',
     processing_time_seconds: Math.floor(Math.random() * 60) + 90,
     
     participant_id: participantId,
