@@ -79,7 +79,6 @@ export const uploadPDFFiles = async (files, onProgress) => {
   });
 
   try {
-    debugger;
     // Call the actual API endpoint
     const response = await fetch(`${API_BASE_URL}/biomarkers/upload`, {
       method: 'POST',
