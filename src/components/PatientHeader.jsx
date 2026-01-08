@@ -11,6 +11,10 @@ function PatientHeader({ participant }) {
     <div className="patient-header">
       <div className="patient-info-grid">
         <div className="info-item">
+          <span className="info-label">Patient Name</span>
+          <span className="info-value">{participant.patient_name}</span>
+        </div>
+        <div className="info-item">
           <span className="info-label">Patient ID</span>
           <span className="info-value">{participant.participant_code || participant.code}</span>
         </div>
