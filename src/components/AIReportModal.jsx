@@ -75,7 +75,7 @@ function AIReportModal({ participantId, onClose }) {
           {report && (
             <div className="report-content">
               <div className="report-header">
-                <div className="report-title">Complete Health Analysis Report</div>
+                <div className="report-title">Complete Health Analysis Report (Dummy data)</div>
                 <div className="report-meta">
                   <span>Report ID: {report.report_id}</span>
                   <span>Engine: {report.analysis_engine}</span>
